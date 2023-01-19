@@ -34,9 +34,9 @@ def random_graph(n, p, *, directed=False):
     return adj_list, n, edges
 
 
-adj, n, edges = random_graph(2048*10, 0.5)
+adj, n, edges = random_graph(16, 0.6, directed=True)
 
-with open('test_graph_20.csv', 'w') as f:
+with open('test_graph_0.csv', 'w') as f:
     f.write(f"{n}\n")
     f.write(f"{edges}\n")
     for line in adj:

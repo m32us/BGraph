@@ -1,4 +1,5 @@
 from utils import listed_binary
+from numpy import log2, floor
 
 # def read_edgelist(file_path='data/input_9.csv'):
 #     num_nodes = 64
@@ -21,7 +22,31 @@ from utils import listed_binary
 #         s = ', '.join(str(x) for x in line)
 #         f.write(f"{s}\n")
 
-def preprocessing_graph(file_path='./test_graph.csv'):
-    pass
+def preprocessing_graph(file_name='test_graph_00.csv'):
+    fin = open('./data/' + file_name, "r")
+    fout = open('./data/' + 'processed_' + file_name, 'w')
+    num_nodes = fin.readline()
+    print(floor(log2(int(num_nodes))))
+    num_edges = fin.readline()
+    # print(num_edges)
+    fout.write(f"{num_nodes}")
+    fout.write(f"{num_edges}")
 
+    lst_binary = list(listed_binary(
+        floor(log2(int(num_nodes))) + 1
+        ))
+
+    print(lst_binary)
+
+    for count, line in enumerate(fin.readlines()):
+        adj_vertex = line.split(', ')
+        curr_vertex_boolean_formula = lst_binary[count]
+        for adj in adj_vertex:
+            vertex_boolean_formula = lst_binary[int(adj)]
+            fout.write(f"{curr_vertex_boolean_formula+vertex_boolean_formula}\n")
+
+    fin.close()
+    fout.close()
+
+preprocessing_graph()
 
