@@ -1,0 +1,14 @@
+__pycache__
+
+# Ignore for large graph
+test_graph_10.csv
+test_graph_11.csv
+test_graph_12.csv
+test_graph_13.csv
+test_graph_14.csv
+test_graph_15.csv
+test_graph_16.csv
+test_graph_17.csv
+test_graph_18.csv
+test_graph_19.csv
+test_graph_20.csv
