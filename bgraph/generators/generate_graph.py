@@ -1,9 +1,7 @@
-#!/usr/bin python
-
 from random import random
 from itertools import product, combinations
 
-def random_graph(n, p, *, directed=False):
+def random_graph(n, p, *, directed=False, saved=False, filepath='test_graph_0.csv'):
     """random_graph
 
     Args:
@@ -31,14 +29,17 @@ def random_graph(n, p, *, directed=False):
                 adj_list[v].append(u)
             edges += 1
 
+    if saved and filepath is not None:
+        with open(filepath, 'w') as f:
+            f.write(f"{n}\n")
+            f.write(f"{edges}\n")
+            for line in adj:
+                s = ', '.join(str(x) for x in line)
+                f.write(f"{s}\n")
+
     return adj_list, n, edges
 
 
+# TEST
 adj, n, edges = random_graph(16, 0.6, directed=True)
 
-with open('test_graph_0.csv', 'w') as f:
-    f.write(f"{n}\n")
-    f.write(f"{edges}\n")
-    for line in adj:
-        s = ', '.join(str(x) for x in line)
-        f.write(f"{s}\n")

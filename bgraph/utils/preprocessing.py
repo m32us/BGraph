@@ -1,4 +1,4 @@
-from utils import listed_binary
+from bgraph.utils.utils import listed_binary
 from numpy import log2, floor
 
 # def read_edgelist(file_path='data/input_9.csv'):
