@@ -1,0 +1,52 @@
+1/ Thiết kế lớp Vertex
+Thuộc tính
+- Data (Tensor)
+- Label (String, Tensor)
+Phương thức:
+- get_vertex
+- get_label
+
+2/ Thiết kế lớp Edge
+Thuộc tính
+- from_vertex : Vertex
+- to_vertex : Vertex
+- label : (String, Tensor)
+- weight : Tensor/ Number
+- is_directed : Boolean
+Phương thức:
+- get_from_vertex
+- get_to_vertex
+- get_weight
+- get_label
+- check_directed
+
+3/ Thiết kế lớp ABCGraph
+Thuộc tính:
+- num_vertices
+- is_directed
+Phương thức:
+- add_egde
+- add_vertex
+- remove_vertex
+- remove_adge
+- get_adjacent_vertices
+- get_indegree
+- get_outdegree
+- adjacency_matrix
+- adjacency_list
+- dump
+- save
+- load
+
+4/ Thiết kế thuật toán đồ thị
+Phương thức
+- breadth_first_search: list of visited vertices using bfs traversal
+- depth_first_search: list of visited vertices using dfs traversal
+- topological_sort: list of visited vertices satisfying all precedence relationships
+- shortest_path_unweighted: shortest path between source and destination for an unweighted graph
+- shortest_path_weighted: shortest path using djisktra's algorithm between source and destination for a weighted graph
+- minimum_cost: a cost that represents the minimum cost b/w source and destination
+- minimum_spanning_tree_prim: spanning tree list from source for non-isolated graphs
+- minimum_spanning_tree_kruskal: spanning tree list from source for disconnected graphs
+- induced_subgraph: subgraph with induced list vertices
+
