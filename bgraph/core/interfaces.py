@@ -1,7 +1,7 @@
 import abc as abstract
 from typing import Optional
 
-class ABCVertex(abstract.ABC):
+class ABCVertex:
     """Abstract class for Vertex of the Graph
     """
     def __init__(self, vertex: int, label: Optional[str] = None):
