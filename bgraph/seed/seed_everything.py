@@ -1,10 +1,26 @@
 import random
 
 import numpy as np
-import torch
+
+try:
+    import torch
+except ImportError:
+    raise ImportError('PyTorch has not already installed.')
+
 
 def seed_everything(seed: int):
+    """Seed everything for NumPy, PyTorch
+
+    Args:
+        seed (int): seed number for stochastic.
+
+    Raises:
+        UserWarning: PyTorch has not already installed.
+    """
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    try:
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    except UserWarning:
+        raise UserWarning('PyTorch has not already installed.')

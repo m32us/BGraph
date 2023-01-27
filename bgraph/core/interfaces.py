@@ -1,40 +1,75 @@
 import abc as abstract
-
+from typing import Optional
 
 class ABCVertex(abstract.ABC):
     """Abstract class for Vertex of the Graph
     """
-    def __init__(self, vertex: int, label: str):
+    def __init__(self, vertex: int, label: Optional[str] = None):
         """
 
         Args:
-            vertex (int): _description_
-            label (str): _description_
+            vertex (int): Vertex indexing
+            label (str): Label of the vertex
         """
         self.vertex = vertex
         self.label = label
+        self.weight_lst = {}
+        self.adjacency_lst = set()
 
     def get_vertex(self):
-        """_summary_
+        """Get vertex
 
         Returns:
-            _type_: _description_
+            _type_: get the index of vertex
         """
         return self.vertex
 
     def get_label(self):
+        """Get label of the vertex
+
+        Returns:
+            _type_: get the label of vertex
+        """
+        return self.label
+
+    def add_adjacency_vertex(self, vertex: int,
+                             label: Optional[str] = None,
+                             weight: Optional[int] = None):
+        """Add an adjacency vertex of the vertex
+
+        Args:
+            vertex (int): index of adjacency vertex
+            label (str): label of adjacency vertex
+            weight (int, optional): weight of adjacency vertex. Defaults to 0.
+        """
+        self.adjacency_lst.add({vertex, label})
+        self.weight_lst[vertex] = weight
+
+    def get_vertex_weight(self, vertex):
         """_summary_
+
+        Args:
+            vertex (_type_): _description_
 
         Returns:
             _type_: _description_
         """
-        return self.label
+        if vertex in self.adjacency_lst:
+            return self.weight_lst[vertex]
+
+    def get_adjacency_lst(self):
+        return self.adjacency_lst
 
 
 class ABCEdge:
     """Abstract class for Edge of the Graph
     """
-    def __init__(self, from_vertex:  ABCVertex, to_vertex:  ABCVertex, label: str, weight=0, is_directed=False):
+    def __init__(self,
+                 from_vertex:  ABCVertex,
+                 to_vertex:  ABCVertex,
+                 label: Optional[str] = None,
+                 weight: Optional[int] = None,
+                 is_directed=False):
         """Initialization method
 
         Args:
@@ -67,10 +102,10 @@ class ABCEdge:
         return self.to_vertex
 
     def get_weight(self):
-        """Get the weight of the edge
+        """Get the weight of the edge.
 
         Returns:
-            (int) : _description_
+            (int) : weight of the edge.
         """
         return self.weight
 
@@ -78,7 +113,7 @@ class ABCEdge:
         """Get the label of the edge
 
         Returns:
-            (String): _description_
+            (String): label of the edge.
         """
         return self.label
 
@@ -86,7 +121,7 @@ class ABCEdge:
         """Check if edge is directed
 
         Returns:
-            (Boolean): _description_
+            (Boolean): Return True if edge is directed. Otherwise, False.
         """
         return self.is_directed
 
