@@ -1,5 +1,6 @@
 import os, errno
-from random import random
+from random import random, randint, seed
+from numpy.random import default_rng
 from itertools import product, combinations
 
 def random_graph(n, p, *, directed=False, saved=False, filepath='test_graph_0.csv'):
@@ -46,7 +47,7 @@ def random_graph(n, p, *, directed=False, saved=False, filepath='test_graph_0.cs
 
 
 def random_graph_v2(n, p, *, directed=False, saved=True, folder_path='gdata'):
-    """random_graph
+    """random_graph V2
 
     Args:
         n (int): Initialise a graph with n nodes and no edges
@@ -84,16 +85,16 @@ def random_graph_v2(n, p, *, directed=False, saved=True, folder_path='gdata'):
             f.write(f"{n}\n")
             f.write(f"{edges}\n")
             for line in adj_list:
-                label = round(random() * edges, 5)
-                weight = int(random() * edges)
+                label = int(random() * edges * 2)
+                weight = randint(1, edges * edges)
                 s = ', '.join(str(x) + '(' + str(label) + ',' + str(weight) +')' for x in line)
                 f.write(f"{s}\n")
             f.close()
 
         with open(os.path.join(folder_path + '/' + 'vertices_lst'), 'w') as f:
             for i in range(n):
-                label = round(random() * n, 5)
-                weight = int(random() * n)
+                label = int(random() * n * 2)
+                weight = randint(1, n * n)
                 s = str(i) + ':' + '(' + str(label) + ',' + str(weight) +')'
                 f.write(f"{s}\n")
             f.close()
