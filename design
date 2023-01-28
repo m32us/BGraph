@@ -2,6 +2,7 @@
 Thuộc tính
 - Data (Tensor)
 - Label (String, Tensor)
+- List neighbors
 Phương thức:
 - get_vertex
 - get_label
@@ -12,7 +13,7 @@ Thuộc tính
 - to_vertex : Vertex
 - label : (String, Tensor)
 - weight : Tensor/ Number
-- is_directed : Boolean
+# - is_directed : Boolean
 Phương thức:
 - get_from_vertex
 - get_to_vertex
