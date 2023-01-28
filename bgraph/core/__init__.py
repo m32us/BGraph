@@ -4,11 +4,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from .interfaces import ABCVertex, ABCEdge, ABCGraph
-
+from .graph import ABCEdge, ABCNode, ABCGraph
+from .undirected_graph import UDBGraph
 
 __all__ = [
-    'ABCVertex',
+    'ABCNode',
     'ABCEdge',
-    'ABCGraph'
+    'ABCGraph',
+    'UDBGraph'
 ]

@@ -26,7 +26,7 @@ def read_tail(fname, lines):
     return data.splitlines()[-lines:]
 
 
-def get_number_of_nodes(filepath, desired_line_number=1):
+def get_number_of_nodes(file_path, desired_line_number=1):
     """Get number of nodes, using linecache in the case of small files.
 
     Args:
@@ -36,10 +36,11 @@ def get_number_of_nodes(filepath, desired_line_number=1):
     Returns:
         int: the number of nodes of input graph.
     """
-    return int(linecache.getline(filepath, desired_line_number).strip())
+    file_path += '/adj_lst'
+    return int(linecache.getline(file_path, desired_line_number).strip())
 
 
-def get_number_of_edges(filepath, desired_line_number=2):
+def get_number_of_edges(file_path, desired_line_number=2):
     """Get number of edges, using linecache in the case of small files.
 
     Args:
@@ -49,7 +50,8 @@ def get_number_of_edges(filepath, desired_line_number=2):
     Returns:
         int: the number of nodes of input graph.
     """
-    return int(linecache.getline(filepath, desired_line_number).strip())
+    file_path += '/adj_lst'
+    return int(linecache.getline(file_path, desired_line_number).strip())
 
 
 def getline(file_path, desired_line_number):
@@ -72,7 +74,7 @@ def getline(file_path, desired_line_number):
     return ''
 
 
-def opt_get_number_of_nodes(filepath, desired_line_number=1):
+def opt_get_number_of_nodes(file_path, desired_line_number=1):
     """Get number of nodes, using loop for more optimized in the case of small files.
 
     Args:
@@ -82,10 +84,11 @@ def opt_get_number_of_nodes(filepath, desired_line_number=1):
     Returns:
         int: the number of nodes of input graph.
     """
-    return int(getline(filepath, desired_line_number).strip())
+    file_path += '/adj_lst'
+    return int(getline(file_path, desired_line_number).strip())
 
 
-def opt_get_number_of_edges(filepath, desired_line_number=2):
+def opt_get_number_of_edges(file_path, desired_line_number=2):
     """Get number of nodes, using loop for more optimized in the case of small files.
 
     Args:
@@ -95,20 +98,27 @@ def opt_get_number_of_edges(filepath, desired_line_number=2):
     Returns:
         int: the number of edges of input graph.
     """
-    return int(getline(filepath, desired_line_number).strip())
+    file_path += '/adj_lst'
+    return int(getline(file_path, desired_line_number).strip())
 
 
 def get_adjacency_list(inp_vertex, data_path):
+    data_path += '/adj_lst'
     data = getline(data_path, inp_vertex+2).strip().split(', ')
-    adj_lst = []
+    vertex_lst = []
+    label_lst = []
+    data_lst = []
     for item in data:
         vertex, data = item.split('(')
-        label_edge, weight_edge = data[0:-1].split(',')
-        adj_lst.append([int(vertex), int(label_edge), int(weight_edge)])
-    return np.array(adj_lst)
+        label_edge, data_edge = data[0:-1].split(',')
+        vertex_lst.append(vertex)
+        label_lst.append(label_edge)
+        data_lst.append(data_edge)
+    return vertex_lst, label_lst, data_lst
 
-def get_vertex_info(inp_vertex, datapath):
-    data = getline(datapath, inp_vertex).strip()
+def get_node_info(inp_vertex, data_path):
+    data_path += '/vertices_lst'
+    data = getline(data_path, inp_vertex).strip()
     label, weight = data.split(':')[1][1:-1].split(',')
     return label, weight
 

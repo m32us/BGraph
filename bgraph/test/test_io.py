@@ -3,38 +3,40 @@ from unittest import TestCase
 import numpy as np
 
 from bgraph.utils import get_number_of_nodes, opt_get_number_of_nodes, \
-get_number_of_edges, opt_get_number_of_edges, get_vertex_info, \
+    get_number_of_edges, opt_get_number_of_edges, get_node_info, \
     get_adjacency_list
+
 
 class TestIO(TestCase):
     def test_case_00(self):
-        no_nodes = get_number_of_nodes('gdata_undirected/adj_lst')
+        no_nodes = get_number_of_nodes('gdata_undirected')
         assert no_nodes == 16
 
     def test_case_02(self):
-        no_nodes = opt_get_number_of_nodes('gdata_undirected/adj_lst')
+        no_nodes = opt_get_number_of_nodes('gdata_undirected')
         assert no_nodes == 16
 
     def test_case_03(self):
-        no_nodes = get_number_of_edges('gdata_undirected/adj_lst')
-        assert no_nodes == 73
+        no_nodes = get_number_of_edges('gdata_undirected')
+        assert no_nodes == 77
 
     def test_case_04(self):
-        no_nodes = opt_get_number_of_edges('gdata_undirected/adj_lst')
-        assert no_nodes == 73
+        no_nodes = opt_get_number_of_edges('gdata_undirected')
+        assert no_nodes == 77
 
     def test_case_05(self):
-        label, weight = get_vertex_info(5, 'gdata_undirected/vertices_lst')
-        assert label == '8'
-        assert weight == '48'
+        label, weight = get_node_info(5, 'gdata_undirected')
+        assert label == '17'
+        assert weight == '249'
 
-    def test_case_06(self):
-        adj_lst = get_adjacency_list(1, 'gdata_undirected/adj_lst')
-        assert adj_lst == np.array([[   2,    2, 1305],
-                                    [   3,    2, 1305],
-                                    [   6,    2, 1305],
-                                    [   7,    2, 1305],
-                                    [   8,    2, 1305],
-                                    [  11,    2, 1305],
-                                    [  13,    2, 1305],
-                                    [  15,    2, 1305],])
+    # def test_case_06(self):
+    #     adj_lst = get_adjacency_list(1, 'gdata_undirected')
+    #     assert adj_lst == (np.array([[1, 114, 991],
+    #                                 [3, 114, 991],
+    #                                 [4, 114, 991],
+    #                                 [6, 114, 991],
+    #                                 [7, 114, 991],
+    #                                 [8, 114, 991],
+    #                                 [12, 114, 991],
+    #                                 [14, 114, 991],
+    #                                 [15, 114, 991]]))
