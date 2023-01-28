@@ -4,8 +4,8 @@ import numpy as np
 
 try:
     import torch
-except ImportError:
-    raise ImportError('PyTorch has not already installed.')
+except UserWarning:
+    raise UserWarning('PyTorch has not already installed.')
 
 
 def seed_everything(seed: int):
@@ -24,3 +24,11 @@ def seed_everything(seed: int):
         torch.cuda.manual_seed_all(seed)
     except UserWarning:
         raise UserWarning('PyTorch has not already installed.')
+
+def seed_random(seed: int):
+    """Seed everything for NumPy, PyTorch
+
+    Args:
+        seed (int): seed number for stochastic.
+    """
+    random.seed(seed)
