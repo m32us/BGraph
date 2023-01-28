@@ -1,106 +1,116 @@
-from pyeda.inter import *
-import pydot
-from graphviz import Source
-import pandas as pd
-import copy
+import abc as abstract
+from typing import Optional
 
-# đọc num_edge dòng từ file input vào ram
-def read_edge_from_file(filename:str, num_edge:int):
-    Rs = []
-    with open(filename) as fin:
-        num_nodes = fin.readline()
-        num_edges = fin.readline()
-        for i in range(num_edge):
-            line = fin.readline()
-            if line != '':
-                tmp = line.rstrip('\n')
-                Rs.append([int(e) for e in tmp])
-            else:
-                break
+class ABCEdge:
+    """abstract class for Edge
+    """
 
-    return pd.DataFrame(Rs)
+    def __init__(
+        self,
+        label:Optional[int]=None,
+        data:Optional[object]=None
+    ) -> None:
+        self.label = label
+        self.data = data
 
-def build_graph_from_file(filename:str):
-    pass
+class ABCNode:
+    """abstract class for Node
+    """
 
-def read_edge_list_from_file(filename:str):
-    R = []
-    with open(filename) as fin:
-        num_nodes = fin.readline()
-        num_edges = fin.readline()
-        line = fin.readline() # phải đọc từng dòng vì bộ nhớ có hạn
-        while line != '':
-            R.append(line.rstrip('\n'))
-            line = fin.readline()
+    def __init__(
+        self,
+        label:Optional[int]=None,
+        data:Optional[object]=None,
+    ) -> None:
+        self.data = data
+        self.label = label
+        self.list_neighbor:list[int] = [] # store label of neighbor nodes
+        self.list_edge:list[ABCEdge] = []
 
-    Rs = []
-    for s in R:
-        Rs.append([int(e) for e in s])
+class ABCGraph:
+    """abstract class for Graph
+    """
 
-    return pd.DataFrame(Rs)
+    def __init__(
+        self,
+        num_node:int=0,
+        num_edge:int=0
+    ) -> None:
+        self.list_node:dict[int,ABCNode] = {}
+        self.num_node = num_node
+        self.num_edge = num_edge
 
-# for testing
-def read_edge_list():
-    R = ['000010','010000','100000','011000','110100','100001','010001','001011','101001','101111','111110','111011','110011']
-    Rs = []
-    for s in R:
-        Rs.append([int(e) for e in s])
-    return pd.DataFrame(Rs)
+    @abstract.abstractmethod
+    def add_edge(self, node1:int, node2:int, edge:Optional[ABCEdge]=None):
+        """add an edge between 2 node node1 and node2.
+        this method will execute differently in directed and undirected graph
 
-# D is a list of node (ascending order)
-# s is pair generated from D
-def gen_pair(i:int, s:list[int], D:list[int], list_pair:list[list[int]]):
-    if i == len(s):
-        if len(set(s)) == len(s):
-            list_pair.append(s)
-            print(s)
-    else:
-        for item in D:
-            s[i] = item
-            gen_pair(i+1, s, D, list_pair)
+        Args:
+            node1 (int): label of the first node
+            node2 (int): label of the second node
+            edge (Optional[ABCEdge], optional): edge info if needed. Defaults to None.
+        """
+        pass
 
-def convert_row_to_formula(row):
-    row_formula = ['~'*abs(row[i]-1) + f'x{i}' for i in range(len(row))]
-    return ' & '.join(row_formula)
+    def add_node(self, node:ABCNode)->bool:
+        """add a node to list_node. 
+        if node's label is none, gen a new label based on num_node
 
-def convert_bin_formula(R:pd.DataFrame):
-    r_formulas = set()
-    for row in R.iterrows():
-        r_formula = convert_row_to_formula(row[1])
-        r_formulas.add(r_formula)
-    return r_formulas
+        Args:
+            node (ABCNode): a node
 
-def dec_to_bin(num:int, length=5):
-    tmp = bin(num)[2:]
-    return [int(i) for i in '0'*(length-len(tmp)) + tmp]
+        Returns:
+            bool: return True if succeed. False if fail
+        """
+        if node.label is None:
+            self.num_node += 1
+            self.list_node[self.num_node] = node
+            return True
+        elif self.list_node.get(node.label) is None:
+            self.list_node[node.label] = node
+            self.num_node += 1
+            return True
+        else:
+            # self.list_node[node.label] = node
+            return False
 
-def check(s:list[int]):
-    return len(set(s)) == len(s)
+    @abstract.abstractmethod
+    def remove_node(self, node:int)->bool:
+        """remove a node in graph.
+        if graph is undirected, just visit all its neighbors and remove the connection
+        before remove `node` from `list_node`
+        if graph is directed, ???
 
-def gen_pair(i:int, pair:list[int], D:list[int], list_pair:list[list[int]]):
-    if i == len(pair):
-        if check(pair):
-            list_pair.append(copy.deepcopy(pair))
-    else:
-        for item in D:
-            pair[i] = item
-            gen_pair(i+1, pair, D, list_pair)
+        Args:
+            node (int): label of node
 
-def find_subgraph(list_node:list[int], expression:str):
-    list_pair = []
-    list_connection = []
-    gen_pair(0, [0,0], list_node, list_pair)
-    for connection in list_pair:
-        str_formula = convert_row_to_formula(dec_to_bin(connection[0]) + dec_to_bin(connection[1]))
-        if str_formula in expression:
-            print(f'{connection}: {str_formula}')
-            list_connection.append(str_formula)
-    return list_connection
+        Returns:
+            bool: return True if succeed. False if fail
+        """
+        pass
 
-if __name__=='__main__':
-    R = read_edge_list_from_file('./data/processed_test_graph_0.csv')
-    # R = read_edge_from_file('./data/processed_test_graph_0.csv', 1000)
-    expression = convert_bin_formula(R)
-    # print(expression)
-    # str_formula = convert_row_to_formula(dec_to_bin(2) + dec_to_bin(4))
-    sub_graph = find_subgraph([0,2,4], expression)
+    @abstract.abstractmethod
+    def remove_edge(self, start_node:int, end_node:int)->bool:
+        """remove an edge from start_node to end_node.
+        if graph is undirected, we have to remove edge in both start_node and end_node
+
+        Args:
+            start_node (int): label of start node
+            end_node (int): label of end node
+
+        Returns:
+            bool: return True if succeed. False if fail
+        """
+        pass
+
+    @abstract.abstractmethod
+    def get_degree(self, node:int)->int:
+        """calculate the degree of a node
+
+        Args:
+            node (int): label of a node
+
+        Returns:
+            int: degree of node
+        """
+        pass

@@ -52,7 +52,7 @@ def get_number_of_edges(filepath, desired_line_number=2):
     return int(linecache.getline(filepath, desired_line_number).strip())
 
 
-def getline(thefilepath, desired_line_number):
+def getline(file_path, desired_line_number):
     """Get line using for loop
 
     Args:
@@ -65,7 +65,7 @@ def getline(thefilepath, desired_line_number):
     if desired_line_number < 1:
         return ''
     current_line_number = 0
-    for line in open(thefilepath):
+    for line in open(file_path):
         current_line_number += 1
         if current_line_number == desired_line_number:
             return line
@@ -98,8 +98,8 @@ def opt_get_number_of_edges(filepath, desired_line_number=2):
     return int(getline(filepath, desired_line_number).strip())
 
 
-def get_adjacency_list(inp_vertex, datapath):
-    data = getline(datapath, inp_vertex+2).strip().split(', ')
+def get_adjacency_list(inp_vertex, data_path):
+    data = getline(data_path, inp_vertex+2).strip().split(', ')
     adj_lst = []
     for item in data:
         vertex, data = item.split('(')
