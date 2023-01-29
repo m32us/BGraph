@@ -1,6 +1,7 @@
 __pycache__
 .ipynb_checkpoints
 .vscode
+.pytest_cache
 
 # Ignore for large graph
 test_graph_10.csv

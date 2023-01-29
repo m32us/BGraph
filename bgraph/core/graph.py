@@ -13,6 +13,15 @@ class ABCEdge:
         self.label = label
         self.data = data
 
+    def get_label(self) -> Optional[int]:
+        return self.label
+
+    def get_data(self) -> Optional[object]:
+        return self.data
+
+    def __repr__(self) -> str:
+        return '(label: {}, data: {})'.format(self.get_label(), self.get_data())
+
 class ABCNode:
     """abstract class for Node
     """
@@ -26,6 +35,18 @@ class ABCNode:
         self.label = label
         self.list_neighbor:list[int] = [] # store label of neighbor nodes
         self.list_edge:list[ABCEdge] = []
+
+    def get_data(self) -> Optional[object]:
+        return self.data
+
+    def get_label(self) -> Optional[int]:
+        return self.label
+
+    def get_list_neighbor(self) -> list[int]:
+        return self.list_neighbor
+
+    def get_list_edge(self) -> list[ABCEdge]:
+        return self.list_edge
 
 class ABCGraph:
     """abstract class for Graph
@@ -58,7 +79,7 @@ class ABCGraph:
         pass
 
     def add_node(self, node:ABCNode)->bool:
-        """add a node to list_node. 
+        """add a node to list_node.
         if node's label is none, gen a new label based on num_node
 
         Args:
@@ -77,7 +98,8 @@ class ABCGraph:
             return True
         else:
             # self.list_node[node.label] = node
-            return False
+            # return False
+            raise UserWarning('Adding node fail.')
 
     @abstract.abstractmethod
     def remove_node(self, node:int)->bool:

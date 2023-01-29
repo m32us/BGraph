@@ -1,6 +1,6 @@
 import linecache
 import os
-import numpy as np
+from typing import Optional, Tuple
 
 def read_tail(fname, lines):
     """Read last N lines from file fname."""
@@ -26,7 +26,7 @@ def read_tail(fname, lines):
     return data.splitlines()[-lines:]
 
 
-def get_number_of_nodes(filepath, desired_line_number=1):
+def get_number_of_nodes(file_path, desired_line_number=1):
     """Get number of nodes, using linecache in the case of small files.
 
     Args:
@@ -36,10 +36,11 @@ def get_number_of_nodes(filepath, desired_line_number=1):
     Returns:
         int: the number of nodes of input graph.
     """
-    return int(linecache.getline(filepath, desired_line_number).strip())
+    file_path += '/adj_lst'
+    return int(linecache.getline(file_path, desired_line_number).strip())
 
 
-def get_number_of_edges(filepath, desired_line_number=2):
+def get_number_of_edges(file_path, desired_line_number=2):
     """Get number of edges, using linecache in the case of small files.
 
     Args:
@@ -49,7 +50,8 @@ def get_number_of_edges(filepath, desired_line_number=2):
     Returns:
         int: the number of nodes of input graph.
     """
-    return int(linecache.getline(filepath, desired_line_number).strip())
+    file_path += '/adj_lst'
+    return int(linecache.getline(file_path, desired_line_number).strip())
 
 
 def getline(file_path, desired_line_number):
@@ -72,7 +74,7 @@ def getline(file_path, desired_line_number):
     return ''
 
 
-def opt_get_number_of_nodes(filepath, desired_line_number=1):
+def opt_get_number_of_nodes(file_path, desired_line_number=1):
     """Get number of nodes, using loop for more optimized in the case of small files.
 
     Args:
@@ -82,10 +84,11 @@ def opt_get_number_of_nodes(filepath, desired_line_number=1):
     Returns:
         int: the number of nodes of input graph.
     """
-    return int(getline(filepath, desired_line_number).strip())
+    file_path += '/adj_lst'
+    return int(getline(file_path, desired_line_number).strip())
 
 
-def opt_get_number_of_edges(filepath, desired_line_number=2):
+def opt_get_number_of_edges(file_path, desired_line_number=2):
     """Get number of nodes, using loop for more optimized in the case of small files.
 
     Args:
@@ -95,23 +98,88 @@ def opt_get_number_of_edges(filepath, desired_line_number=2):
     Returns:
         int: the number of edges of input graph.
     """
-    return int(getline(filepath, desired_line_number).strip())
+    file_path += '/adj_lst'
+    return int(getline(file_path, desired_line_number).strip())
 
 
-def get_adjacency_list(inp_vertex, data_path):
-    data = getline(data_path, inp_vertex+2).strip().split(', ')
-    adj_lst = []
+def get_adjacency_list(label: int, data_path: str):
+    data_path += '/adj_lst'
+    data = getline(data_path, label+2).strip().split(', ')
+
+    # Danh sách nhãn đỉnh, trọng số cạnh, dữ liệu cạnh
+    label_lst = []
+    weight_edge_lst = []
+    data_edge_lst = []
+
     for item in data:
-        vertex, data = item.split('(')
-        label_edge, weight_edge = data[0:-1].split(',')
-        adj_lst.append([int(vertex), int(label_edge), int(weight_edge)])
-    return np.array(adj_lst)
+        label_item, data_item = item.split('(')
+        weight_edge, data_edge = data_item[0:-1].split(',')
 
-def get_vertex_info(inp_vertex, datapath):
-    data = getline(datapath, inp_vertex).strip()
-    label, weight = data.split(':')[1][1:-1].split(',')
-    return label, weight
+        label_lst.append(label_item)
+        weight_edge_lst.append(weight_edge)
+        data_edge_lst.append(data_edge)
 
+    return label_lst, weight_edge_lst, data_edge_lst
+
+def get_node_info(label: int, data_path: str) -> tuple:
+    """Get information of a node
+
+    Args:
+        label (int): Label of input node
+        data_path (str): Path to database
+
+    Returns:
+        tuple: Tuple of vertex weight, vertex data
+    """
+    data_path += '/vertices_lst'
+
+    # Đọc dòng có nhãn là label
+    data = getline(data_path, label).strip()
+
+    # Lấy ra thông tin về trọng số, dữ liệu của đỉnh
+    weight_vertex, data_vertex = data.split(':')[1][1:-1].split(',')
+
+    # Trả về thông tin cần
+    return weight_vertex, data_vertex
+
+def remove_node_from_file(label:int, data_path:str):
+    """Remove a node labelled as `label` from datafile.
+
+    Args:
+        label (int): Label of a node that need to be removed.
+        data_path (str): Path to database.
+    """
+    adj_lst_filename = data_path + '/adj_lst'
+    vertices_lst_filename = data_path + '/vertices_lst'
+    pass
+
+def remove_edge_from_file(label:int, data_path:str):
+    """Remove an edge labelled as `label` from datafile.
+
+    Args:
+        label (int) : Label of an edge that need to be removed.
+        data_path (str): Path to database.
+    """
+    pass
+
+def add_node_to_file(label:int, data: Optional[object], data_path: str):
+    """Add a node labelled as `label`, store data as `data` [Optional] to datafile.
+
+    Args:
+        label (int): Label of a node that need to be added.
+        data (Optional[object]): Data of this node.
+        data_path (str): Path to database.
+    """
+    pass
+
+def add_edge_to_file(label: int, data: Optional[object], data_path: str):
+    """Add an edge labelled as `label`, store data as `data` [Optional] to data file
+
+    Args:
+        label (int): Label of an edge that need to be added.
+        data (Optional[object]): Data of this edge.
+        data_path (str): Path to database.
+    """
 
 def read_adjacency_list(filepath='adjacency_list.csv'):
     pass
