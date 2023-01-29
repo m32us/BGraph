@@ -67,11 +67,11 @@ class ABCGraph:
         Returns:
             bool: return True if succeed. False if fail
         """
-        if node.label is None:
+        if node.label is None: # construct node without label
             self.num_node += 1
             self.list_node[self.num_node] = node
             return True
-        elif self.list_node.get(node.label) is None:
+        elif self.list_node.get(node.label) is None: # construct node with label and label is not in list_node
             self.list_node[node.label] = node
             self.num_node += 1
             return True
