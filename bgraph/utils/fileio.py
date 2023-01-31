@@ -1,5 +1,6 @@
 import linecache
 import os
+import errno
 from typing import Optional, Tuple, List, Dict, Union
 from bgraph.core import ABCEdge, ABCNode, DEdge, DBGraph, UDBGraph
 
