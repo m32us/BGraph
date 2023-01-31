@@ -2,7 +2,7 @@ from bgraph.core import ABCNode, ABCEdge, ABCGraph
 
 from typing import Optional, Union
 
-from bgraph.utils.fileio import opt_get_number_of_nodes, opt_get_number_of_edges, get_adjacency_list, get_node_info
+from bgraph.utils.fileio import getline, get_adjacency_list, get_node_info, buf_count_newlines_gen
 
 
 class UDBGraph(ABCGraph):
@@ -11,28 +11,31 @@ class UDBGraph(ABCGraph):
         if data_path is not None:
             self.data_path = data_path
             try:
-                self.num_node, self.num_edge, self.list_node = self.read_graph_from_file(
-                    file_name=data_path)
-            except:
-                raise UserWarning('Filename is not found.')
+                is_directed, self.num_node, self.num_edge, self.list_node = self.read_graph_from_file(
+                    data_path=data_path)
+            except Exception as err:
+                raise err
 
-    def read_graph_from_file(self, file_name: str):
-        try:
-            num_node = opt_get_number_of_nodes(file_path=file_name)
-            num_edge = opt_get_number_of_edges(file_path=file_name)
-        except:
-            raise UserWarning('Filename is not found.')
-
+    def read_graph_from_file(self, data_path: str):
         lst_nodes = {}
-        for i in range(num_node):
-            label, data = get_node_info(i+1, file_name)
+        num_edges = 0
+
+        num_nodes = buf_count_newlines_gen(data_path + '/vertices_lst')
+        is_directed = (False, True)[getline(
+            data_path + '/vertices_lst', 1) == 'D']
+
+        for i in range(num_nodes):
+            label, data = get_node_info(i+2, data_path)
             list_neighbor, label_lst, data_lst = get_adjacency_list(
-                i+1, file_name)
+                i+1, data_path)
             lst_nodes[i] = ABCNode(label=label, data=data)
             lst_nodes[i].list_neighbor = list_neighbor
             lst_nodes[i].list_edge = [
                 ABCEdge(label=l, data=d) for l, d in zip(label_lst, data_lst)]
-        return num_node, num_edge, lst_nodes
+
+            num_edges += len(lst_nodes[i].list_edge)
+
+        return is_directed, num_nodes, num_edges, lst_nodes
 
     def get_num_nodes(self) -> int:
         return self.num_node
@@ -49,10 +52,11 @@ class UDBGraph(ABCGraph):
         return self.list_node
 
     def __check_exist_label(self, label: int) -> bool:
-        for key, value in self.list_node.items():
-            if value.get_label() == label:
-                return True
-        return False
+        return self.list_node.get(label) is not None
+        # for key, value in self.list_node.items():
+        #     if value.get_label() == label:
+        #         return True
+        # return False
 
     # def add_node(self, node: ABCNode) -> bool:
     #     if not self.__check_exist_label(node.get_label()):
@@ -195,3 +199,65 @@ class UDBGraph(ABCGraph):
         except UserWarning('Error occurs.') as usr_warning:
             return usr_warning
         return deg
+
+    def node_induced_subgraph(self, induced_lst_nodes: list[int]) -> Union[bool, ResourceWarning]:
+        """Induced subgraph based on induced nodes
+
+        A node-induced subgraph is a graph with edges whose endpoints are both in the specified node set.
+
+        Return a subgraph induced on the given nodes.
+
+        Args:
+            induced_lst_nodes (list[int]): The nodes to form the subgraph. Listing of integer label.
+
+        Returns:
+            Union[bool, ResourceWarning]:
+        """
+        for node in induced_lst_nodes:
+            try:
+                if not self.__check_exist_label(node): raise
+            except ResourceWarning('Input induced list node has element that not exist in graph.') as res_warning:
+                return res_warning
+
+        result_lst_nodes = dict()
+
+        for node in induced_lst_nodes:
+            target = node
+            # print(target)
+            # print(self.list_node[node].list_neighbor)
+            rest = [x for x in induced_lst_nodes if x != node]
+            lst_neighbor = [(int(x), y) for x, y in zip(self.list_node[node].list_neighbor, self.list_node[node].list_edge) if int(x) in rest]
+
+            result_lst_nodes[target] = lst_neighbor
+
+        # print for debug
+        for key, value in result_lst_nodes.items():
+            print(key)
+            print(value)
+
+        # save, dump ccj đó với cái lày
+        # ...
+
+    def edges_induced_subgraph(self, induced_lst_edges: list[int]) -> Union[bool, ResourceWarning]:
+        """Induced subgraph based on induced edges.
+
+        An edge-induced subgraph is equivalent to creating a new graph using the given edges
+
+        Return a subgraph induced on the given edges.
+
+        Args:
+            induced_lst_edges (list[int]): The edges to form the subgraph.
+
+        Returns:
+            Union[bool, ResourceWarning]:
+        """
+        pass
+
+
+
+
+
+
+
+
+

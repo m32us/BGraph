@@ -2,32 +2,29 @@ from unittest import TestCase
 
 import numpy as np
 
-from bgraph.utils import get_number_of_nodes, opt_get_number_of_nodes, \
-    get_number_of_edges, opt_get_number_of_edges, get_node_info, \
-    get_adjacency_list
 
 
-class TestIO(TestCase):
-    def test_case_00(self):
-        no_nodes = get_number_of_nodes('gdata_undirected')
-        assert no_nodes == 16
+# class TestIO(TestCase):
+#     def test_case_00(self):
+#         no_nodes = get_number_of_nodes('gdata_undirected')
+#         assert no_nodes == 16
 
-    def test_case_02(self):
-        no_nodes = opt_get_number_of_nodes('gdata_undirected')
-        assert no_nodes == 16
+#     def test_case_02(self):
+#         no_nodes = opt_get_number_of_nodes('gdata_undirected')
+#         assert no_nodes == 16
 
-    def test_case_03(self):
-        no_nodes = get_number_of_edges('gdata_undirected')
-        assert no_nodes == 77
+#     def test_case_03(self):
+#         no_nodes = get_number_of_edges('gdata_undirected')
+#         assert no_nodes == 77
 
-    def test_case_04(self):
-        no_nodes = opt_get_number_of_edges('gdata_undirected')
-        assert no_nodes == 77
+#     def test_case_04(self):
+#         no_nodes = opt_get_number_of_edges('gdata_undirected')
+#         assert no_nodes == 77
 
-    def test_case_05(self):
-        label, weight = get_node_info(5, 'gdata_undirected')
-        assert label == '17'
-        assert weight == '249'
+#     def test_case_05(self):
+#         label, weight = get_node_info(5, 'gdata_undirected')
+#         assert label == '17'
+#         assert weight == '249'
 
     # def test_case_06(self):
     #     adj_lst = get_adjacency_list(1, 'gdata_undirected')

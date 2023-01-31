@@ -1,9 +1,7 @@
 import linecache
 import os
-from typing import Optional, Union
-from bgraph.core.graph import ABCEdge, ABCNode
-from bgraph.core.directed_graph import DEdge, DBGraph
-from bgraph.core.undirected_graph import UDBGraph
+from typing import Optional, Tuple, List, Dict, Union
+from bgraph.core import ABCEdge, ABCNode, DEdge, DBGraph, UDBGraph
 
 def read_tail(fname, lines):
     """Read last N lines from file fname."""
@@ -27,6 +25,19 @@ def read_tail(fname, lines):
         else:
             block -= 1
     return data.splitlines()[-lines:]
+
+
+def buf_count_newlines_gen(fname):
+    def _make_gen(reader):
+        while True:
+            b = reader(2 ** 16)
+            if not b:
+                break
+            yield b
+
+    with open(fname, "rb") as f:
+        count = sum(buf.count(b"\n") for buf in _make_gen(f.raw.read))
+    return count
 
 
 def get_number_of_nodes(file_path, desired_line_number=1):
@@ -77,54 +88,56 @@ def getline(file_path, desired_line_number):
     return ''
 
 
-def opt_get_number_of_nodes(file_path, desired_line_number=1):
-    """Get number of nodes, using loop for more optimized in the case of small files.
+# def opt_get_number_of_nodes(file_path, desired_line_number=1):
+#     """Get number of nodes, using loop for more optimized in the case of small files.
 
-    Args:
-        filepath (python.Str): Path to input file.
-        desired_line_number (int, optional): desired line that need to be gotten. Defaults to 1.
+#     Args:
+#         filepath (python.Str): Path to input file.
+#         desired_line_number (int, optional): desired line that need to be gotten. Defaults to 1.
 
-    Returns:
-        int: the number of nodes of input graph.
-    """
-    file_path += '/adj_lst'
-    return int(getline(file_path, desired_line_number).strip())
-
-
-def opt_get_number_of_edges(file_path, desired_line_number=2):
-    """Get number of nodes, using loop for more optimized in the case of small files.
-
-    Args:
-        filepath (python.Str): Path to input file.
-        desired_line_number (int, optional): desired line that need to be gotten. Defaults to 1.
-
-    Returns:
-        int: the number of edges of input graph.
-    """
-    file_path += '/adj_lst'
-    return int(getline(file_path, desired_line_number).strip())
+#     Returns:
+#         int: the number of nodes of input graph.
+#     """
+#     file_path += '/adj_lst'
+#     return int(getline(file_path, desired_line_number).strip())
 
 
-def get_adjacency_list(label: int, data_path: str):
+# def opt_get_number_of_edges(file_path, desired_line_number=2):
+#     """Get number of nodes, using loop for more optimized in the case of small files.
+
+#     Args:
+#         filepath (python.Str): Path to input file.
+#         desired_line_number (int, optional): desired line that need to be gotten. Defaults to 1.
+
+#     Returns:
+#         int: the number of edges of input graph.
+#     """
+#     file_path += '/adj_lst'
+#     return int(getline(file_path, desired_line_number).strip())
+
+
+def get_adjacency_list(label: int, data_path: str) -> Tuple[List, List, List]:
     data_path += '/adj_lst'
-    data = getline(data_path, label+2).strip().split(', ')
+    data = getline(data_path, label).strip().split(':')[1].split(',')
 
     # Danh sách nhãn đỉnh, trọng số cạnh, dữ liệu cạnh
-    label_lst = []
-    weight_edge_lst = []
-    data_edge_lst = []
+    lst_label_nodes = []
+    lst_label_edges = []
+    lst_data_edges = []
 
     for item in data:
-        label_item, data_item = item.split('(')
-        weight_edge, data_edge = data_item[0:-1].split(',')
+        data = data[:-1]
+        label_adj_node, data_item = item.split('(')
+        label_edge, data_edge = data_item.split('-')
 
-        label_lst.append(label_item)
-        weight_edge_lst.append(weight_edge)
-        data_edge_lst.append(data_edge)
+        lst_label_nodes.append(label_adj_node)
+        lst_label_edges.append(label_edge)
+        lst_data_edges.append(data_edge)
 
-    return label_lst, weight_edge_lst, data_edge_lst
+    return lst_label_nodes, lst_label_edges, lst_data_edges
 
-def get_node_info(label: int, data_path: str) -> tuple:
+
+def get_node_info(label: int, data_path: str) -> Tuple[object, object]:
     """Get information of a node
 
     Args:
@@ -132,31 +145,77 @@ def get_node_info(label: int, data_path: str) -> tuple:
         data_path (str): Path to database
 
     Returns:
-        tuple: Tuple of vertex weight, vertex data
+        tuple: Tuple of node label, node data
     """
     data_path += '/vertices_lst'
 
     # Đọc dòng có nhãn là label
-    data = getline(data_path, label).strip()
+    inp_data = getline(data_path, label).strip()
 
     # Lấy ra thông tin về trọng số, dữ liệu của đỉnh
-    weight_vertex, data_vertex = data.split(':')[1][1:-1].split(',')
+    label_node, data_node = inp_data.split(':')
 
     # Trả về thông tin cần
-    return weight_vertex, data_vertex
+    return label_node, data_node
 
-def remove_node_from_file(label:int, data_path:str):
+
+def save_graph(lst_nodes: dict, is_directed: bool, data_path: str = None):
+    try:
+        os.makedirs(data_path)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+    adj_lst_filepath = data_path + '/adj_lst'
+    vertices_lst_filepath = data_path + '/vertices_lst'
+
+    with open(adj_lst_filepath, 'w') as alf, open(vertices_lst_filepath, 'w') as vlf:
+        if is_directed:
+            alf.write("D\n")
+        else:
+            alf.write("D\n")
+
+        for key, value in lst_nodes.items():
+            node_info = str(key) + ':' + str(value.get_label())
+            alf.write(f"{node_info}\n")
+
+            if not is_directed:
+                adj_info = str(key) + ':'
+                for x, y in zip(value.get_list_neighbor(), value.get_list_edge()):
+                    adj_info += (str(x) + '(' + str(y.get_label()) +
+                                 '-' + str(y.get_data()) + ')') + ','
+                adj_info = adj_info[:-1]
+                vlf.write(f"{adj_info}\n")
+            else:
+                pass
+
+        alf.truncate(alf.tell()-1)
+        vlf.truncate(vlf.tell()-1)
+
+        alf.close()
+        vlf.close()
+
+
+def remove_node_from_file(del_label_node: int, modified_lst_nodes: dict, data_path: str):
     """Remove a node labelled as `label` from datafile.
 
     Args:
         label (int): Label of a node that need to be removed.
         data_path (str): Path to database.
     """
+    # Khởi tạo địa chỉ cần đến
     adj_lst_filename = data_path + '/adj_lst'
     vertices_lst_filename = data_path + '/vertices_lst'
-    pass
 
-def remove_edge_from_file(label:int, data_path:str):
+    BLOCK_SIZE = 1 << 15
+    # Xử lý tập tin danh sách kề
+    for line in open(adj_lst_filename):
+        pass
+
+    # Xử lý tập tin danh sách đỉnh
+
+
+def remove_edge_from_file(del_label_edge: int, modified_lst_nodes: dict, data_path: str):
     """Remove an edge labelled as `label` from datafile.
 
     Args:
@@ -165,7 +224,39 @@ def remove_edge_from_file(label:int, data_path:str):
     """
     pass
 
-def add_node_to_file(label:int, data: Optional[object], data_path: str):
+
+def __check_node_exist(node_label: int, data_path: str) -> bool:
+    vertices_lst_filename = data_path + '/vertices_lst'
+    for line in open(vertices_lst_filename):
+        if line[0] == str(node_label):
+            return True
+    return False
+
+
+def __check_edge_exist(start_node_label: Optional[int], end_node_label: Optional[int], edge_label: Optional[int], data_path: str, is_graph_directed: Optional[bool] = False) -> bool:
+    if not __check_node_exist(start_node_label, data_path) or not __check_node_exist(end_node_label):
+        return False
+    adjn_start_node, lst_adje_start_node, _ = get_adjacency_list(
+        start_node_label, data_path)
+    adjn_end_node, lst_adje_end_node, _ = get_adjacency_list(
+        end_node_label, data_path)
+    if start_node_label is not None and end_node_label is not None:
+        if is_graph_directed:
+            if start_node_label in adjn_end_node or end_node_label in adjn_start_node:
+                return True
+            else:
+                return False
+        else:
+            if start_node_label is not None and end_node_label is not None:
+                return True
+            else:
+                return False
+    else:
+        if edge_label in lst_adje_start_node or edge_label in lst_adje_end_node:
+            return True
+
+
+def add_node_to_file(node_label: int, node_data: Optional[object], data_path: str):
     """Add a node labelled as `label`, store data as `data` [Optional] to datafile.
 
     Args:
@@ -173,9 +264,11 @@ def add_node_to_file(label:int, data: Optional[object], data_path: str):
         data (Optional[object]): Data of this node.
         data_path (str): Path to database.
     """
-    pass
+    if not __check_node_exist(node_label=node_label, data_path=data_path):
+        pass
 
-def add_edge_to_file(label: int, data: Optional[object], data_path: str):
+
+def add_edge_to_file(start_node_label: int, end_node_label: int, data: Optional[object], data_path: str):
     """Add an edge labelled as `label`, store data as `data` [Optional] to data file
 
     Args:
@@ -183,6 +276,7 @@ def add_edge_to_file(label: int, data: Optional[object], data_path: str):
         data (Optional[object]): Data of this edge.
         data_path (str): Path to database.
     """
+
 
 def read_adjacency_list(filepath='adjacency_list.csv'):
     pass
