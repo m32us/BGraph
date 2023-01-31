@@ -15,3 +15,5 @@ test_graph_17.csv
 test_graph_18.csv
 test_graph_19.csv
 test_graph_20.csv
+adj_list.txt
+node.txt
