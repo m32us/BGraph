@@ -6,12 +6,14 @@ from __future__ import print_function
 
 from .graph import ABCEdge, ABCNode, ABCGraph
 from .undirected_graph import UDBGraph
-from .directed_graph import DBGraph
+from .directed_graph import DBGraph, DEdge, DNode
 
 __all__ = [
     'ABCNode',
     'ABCEdge',
     'ABCGraph',
     'UDBGraph',
-    'DBGraph'
+    'DBGraph',
+    'DEdge',
+    'DNode'
 ]

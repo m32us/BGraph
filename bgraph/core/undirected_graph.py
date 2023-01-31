@@ -138,7 +138,7 @@ class UDBGraph(ABCGraph):
             self.list_node[start_node].list_edge = [self.list_node[start_node].list_edge[k]
                                                     for k, v in enumerate(self.list_node[start_node].list_edge) if k not in del_indices]
         else:
-            raise UserWarning('Start node doesnot connect with end node.')
+            raise UserWarning('Start node doesn\'t connect with end node.')
 
         # Vào kiểm tra danh sách kề, danh sách cạnh của nút start_node
         if start_node in self.list_node[end_node].list_neighbor:
@@ -149,7 +149,7 @@ class UDBGraph(ABCGraph):
             self.list_node[end_node].list_edge = [self.list_node[end_node].list_edge[k]
                                                   for k, v in enumerate(self.list_node[end_node].list_edge) if k not in del_indices]
         else:
-            raise UserWarning('End node doesnot connect with start node.')
+            raise UserWarning('End node doesn\'t connect with start node.')
 
     def get_indegree(self, node: int) -> Union[int, Exception]:
         """Get indegree of input node

@@ -20,6 +20,7 @@ class DBGraph(ABCGraph):
     def __init__(self) -> None:
         super().__init__()
         self.list_node: dict[int, DNode] = {}
+        self.is_directed = True
 
     def add_edge(self, node1: int, node2: int, edge: Optional[DEdge] = None) -> Union[None, KeyError]:
         if edge is None:
@@ -133,25 +134,24 @@ class DBGraph(ABCGraph):
                     print(neighbor, end=' ')
             print()
 
-graph = DBGraph()
+# graph = DBGraph()
 
-for i in range(1,7):
-    graph.add_node(ABCNode(i))
+# for i in range(1,7):
+#     graph.add_node(DNode(i))
 
-graph.add_edge(1,2, DEdge('out', label=69))
-graph.add_edge(1,2, DEdge('out', label=68))
-graph.add_edge(3,1)
-graph.add_edge(3,2)
-graph.add_edge(2,4)
-graph.add_edge(4,3)
-graph.add_edge(4,5)
-graph.add_edge(4,6)
-graph.add_edge(6,5)
+# graph.add_edge(1,2)
+# graph.add_edge(3,1)
+# graph.add_edge(3,2)
+# graph.add_edge(2,4)
+# graph.add_edge(4,3)
+# graph.add_edge(4,5)
+# graph.add_edge(4,6)
+# graph.add_edge(6,5)
 
-graph.print_adj_list()
-print()
+# graph.print_adj_list()
+# print()
 
-# graph.remove_edge(1,2,69)
-graph.remove_edge(1,4)
-graph.print_adj_list()
-print()
+# # graph.remove_edge(1,2,69)
+# graph.remove_edge(1,4)
+# graph.print_adj_list()
+# print()
