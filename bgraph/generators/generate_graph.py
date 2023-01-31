@@ -86,10 +86,11 @@ def random_graph_v2(n, p, *, directed=False, saved=True, folder_path='gdata'):
                 weight = randint(1, edges)
                 s = []
                 for item in line:
-                    s.append(str(item) + '(' + str(label) + ',' + str(weight) +')')
+                    s.append(str(item) + '(' + str(label) + '-' + str(weight) +')')
                     label += 1
                 res = str(i) + ':' + ','.join(adj_node for adj_node in s)
                 f.write(f"{res}\n")
+            f.truncate(f.tell()-1)
 
         with open(os.path.join(folder_path + '/' + 'vertices_lst'), 'w') as f:
             if directed:
@@ -100,6 +101,7 @@ def random_graph_v2(n, p, *, directed=False, saved=True, folder_path='gdata'):
                 weight = randint(1, n)
                 s = str(i) + ':' + str(weight)
                 f.write(f"{s}\n")
+            f.truncate(f.tell()-1)
             f.close()
 
     return adj_list, n, edges
