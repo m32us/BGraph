@@ -1,6 +1,9 @@
 import linecache
 import os
-from typing import Optional, Tuple
+from typing import Optional, Union
+from bgraph.core.graph import ABCEdge, ABCNode
+from bgraph.core.directed_graph import DEdge, DBGraph
+from bgraph.core.undirected_graph import UDBGraph
 
 def read_tail(fname, lines):
     """Read last N lines from file fname."""
@@ -191,3 +194,67 @@ def read_adjacency_matrix(filepath='adjacency_matrix.csv'):
 
 def read_edge_list(filepath='edge_list.csv'):
     pass
+
+def parse_node(line:str):
+    line = line.strip()
+    elements = line.split(':')
+    node_label = int(elements[0])
+    node_data = elements[1]
+    return ABCNode(node_label, node_data)
+
+def parse_adj_list(line:str, is_directed:bool):
+    line = line.strip()
+    elements = line.split(':')
+    node_label = int(elements[0])
+    edges = elements[1].split(';')
+    list_edge:list[ABCEdge] = []
+    list_neighbor:list[int] = []
+    for edge in edges:
+        tmp = edge.split('(')
+        if tmp[0] == '':
+            break
+        list_neighbor.append(int(tmp[0]))
+
+        edge_label = int(tmp[1].split(',')[0])
+        edge_data = tmp[1].split(',')[1][:-1]
+        if is_directed:
+            list_edge.append(DEdge('out', edge_label, edge_data))
+        else:
+            list_edge.append(ABCEdge(edge_label, edge_data))
+    return node_label, list_neighbor, list_edge
+
+def read_graph_from_file(node_file:str, adj_list_file:str) -> Union[DBGraph, UDBGraph, FileNotFoundError, None]:
+    graph = None
+    is_directed = None
+    try:
+        with open(node_file, 'r') as fin:
+            line = fin.readline()
+            if line == 'D':
+                is_directed = True
+                graph = DBGraph()
+            else:
+                is_directed = False
+                graph = UDBGraph()
+
+            while True:
+                line = fin.readline()
+                if line == '':
+                    break
+                graph.add_node(parse_node(line))
+    except FileNotFoundError:
+        raise FileNotFoundError(f'Can\'t load graph from {node_file}')
+
+    try:
+        with open(adj_list_file, 'r') as fin:
+            while True:
+                line = fin.readline()
+                if line == '':
+                    break
+                node_label, list_neighbor, list_edge = parse_adj_list(line, is_directed)
+                for idx, neighbor in enumerate(list_neighbor):
+                    graph.add_edge(node_label, neighbor, list_edge[idx])
+
+    except FileNotFoundError:
+        raise FileNotFoundError(f'Can\'t load edge from {adj_list_file}')
+
+    return graph
