@@ -1,6 +1,5 @@
 import os, errno
-from random import random, randint, seed
-from numpy.random import default_rng
+from random import random, randint
 from itertools import product, combinations
 
 def random_graph(n, p, *, directed=False, saved=False, filepath='test_graph_0.csv'):
@@ -82,20 +81,24 @@ def random_graph_v2(n, p, *, directed=False, saved=True, folder_path='gdata'):
 
     if saved:
         with open(os.path.join(folder_path + '/' + 'adj_lst'), 'w') as f:
-            f.write(f"{n}\n")
-            f.write(f"{edges}\n")
-            for line in adj_list:
-                label = int(random() * edges * 2)
-                weight = randint(1, edges * edges)
-                s = ', '.join(str(x) + '(' + str(label) + ',' + str(weight) +')' for x in line)
-                f.write(f"{s}\n")
-            f.close()
+            label = 0
+            for i, line in enumerate(adj_list):
+                weight = randint(1, edges)
+                s = []
+                for item in line:
+                    s.append(str(item) + '(' + str(label) + ',' + str(weight) +')')
+                    label += 1
+                res = str(i) + ':' + ','.join(adj_node for adj_node in s)
+                f.write(f"{res}\n")
 
         with open(os.path.join(folder_path + '/' + 'vertices_lst'), 'w') as f:
+            if directed:
+                f.write(f"D\n")
+            else:
+                f.write(f"U\n")
             for i in range(n):
-                label = int(random() * n * 2)
-                weight = randint(1, n * n)
-                s = str(i) + ':' + '(' + str(label) + ',' + str(weight) +')'
+                weight = randint(1, n)
+                s = str(i) + ':' + str(weight)
                 f.write(f"{s}\n")
             f.close()
 
