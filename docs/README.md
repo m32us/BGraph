@@ -21,7 +21,25 @@ D # Dòng đầu tiên cho biết đồ thị có phải đồ thị có hướn
 
 Đọc dữ liệu từ file
 
+```py
+def read_graph_from_file(self, file_name: str):
+"""Đọc dữ liệu hệ thống tập tin. Do giả định đồ thị lớn, hàm thực thi đọc từng dòng mà không tải hết lên ram.
+Tham số:
+- file_name (str): Dường dẫn đến thư mục chứa dữ liệu.
+"""
+```
+
 Lưu dữ liệu xuống file
+
+```py
+def save_graph(lst_nodes: dict, is_directed: bool, data_path: str = None):
+"""Lưu trữ đồ thị
+Tham số:
+- lst_nodes (dict): Danh sách nút
+- is_directed (bool): Đồ thị có hướng hay vô hướng
+- data_path (str, optional): Đường dẫn đến thư mục cần lưu. Defaults to None.
+"""
+```
 
 ## Thiết kế cấu trúc dữ liệu
 
@@ -39,7 +57,7 @@ class ABCNode:
 
 **2/ Cấu trúc dữ liệu ABCEdge**
 
-```
+```py
 class ABCEdge:
     def __init__(self, label: Optional[int] = None, data: Optional[object]=None) -> None:
         self.label = label # Nhãn cạnh.
