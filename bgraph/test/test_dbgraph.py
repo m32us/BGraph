@@ -1,29 +1,28 @@
 from unittest import TestCase
 
-from bgraph.core import UDBGraph, ABCNode
+from bgraph.core import DBGraph, DNode, ABCNode
 from bgraph.utils import read_graph_from_file
 
-class TestUDBGraph(TestCase):
+class TestDBGraph(TestCase):
     def test_case_00(self):
-        g = UDBGraph()
-        assert isinstance(g, UDBGraph)
+        g = DBGraph()
+        assert isinstance(g, DBGraph)
 
     def test_case_01(self):
-        # g = UDBGraph(data_path='gdata_undirected')
-        g = read_graph_from_file('gdata_undirected')
-        assert isinstance(g, UDBGraph)
-        assert g.get_num_nodes() == 8
-        assert g.get_num_edges() == 32
+        g = read_graph_from_file('gdata_directed')
+        assert isinstance(g, DBGraph)
+        assert g.num_node == 8
+        assert g.num_edge == 38
 
     def test_case_02(self):
-        g = UDBGraph()
-        v = ABCNode()
+        g = DBGraph()
+        v = DNode()
         g.add_node(v)
-        assert isinstance(g, UDBGraph)
-        assert g.get_num_nodes() == 1
+        assert isinstance(g, DBGraph)
+        assert g.num_node == 1
 
     def test_case_03(self):
-        g = UDBGraph()
+        g = DBGraph()
         g.add_node(ABCNode(1))
         g.add_node(ABCNode(2))
         g.add_edge(1,2)
@@ -31,7 +30,7 @@ class TestUDBGraph(TestCase):
         assert g.num_node == 2
 
     def test_case_04(self):
-        g = UDBGraph()
+        g = DBGraph()
         g.add_node(ABCNode(1))
         g.add_node(ABCNode(2))
         g.add_edge(1,2)
@@ -45,7 +44,7 @@ class TestUDBGraph(TestCase):
         g.remove_edge(1,2)
 
     def test_case_05(self):
-        g = UDBGraph()
+        g = DBGraph()
         g.add_node(ABCNode(1))
         g.add_node(ABCNode(2))
         g.remove_node(1)
@@ -59,4 +58,4 @@ class TestUDBGraph(TestCase):
         self.test_case_04()
         self.test_case_05()
 
-TestUDBGraph().run_test()
+TestDBGraph().run_test()
