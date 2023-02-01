@@ -1,8 +1,8 @@
 import linecache
 import os
 import errno
-from typing import Optional, Tuple, List, Dict, Union
-from bgraph.core import ABCEdge, ABCNode, DEdge, DBGraph, UDBGraph
+from typing import Optional, Tuple, List, Union
+from bgraph.core import ABCGraph, ABCEdge, ABCNode, DEdge, DNode, DBGraph, UDBGraph
 
 def read_tail(fname, lines):
     """Read last N lines from file fname."""
@@ -73,7 +73,7 @@ def getline(file_path, desired_line_number):
     """Get line using for loop
 
     Args:
-        thefilepath (python.Str): Path to input file.
+        file_path (python.Str): Path to input file.
         desired_line_number (python.Integer): desired line that need to be gotten.
 
     Returns:
@@ -301,7 +301,7 @@ def parse_adj_list(line:str, is_directed:bool):
     line = line.strip()
     elements = line.split(':')
     node_label = int(elements[0])
-    edges = elements[1].split(';')
+    edges = elements[1].split(',')
     list_edge:list[ABCEdge] = []
     list_neighbor:list[int] = []
     for edge in edges:
@@ -310,31 +310,34 @@ def parse_adj_list(line:str, is_directed:bool):
             break
         list_neighbor.append(int(tmp[0]))
 
-        edge_label = int(tmp[1].split(',')[0])
-        edge_data = tmp[1].split(',')[1][:-1]
+        edge_label = int(tmp[1].split('-')[0])
+        edge_data = tmp[1].split('-')[1][:-1]
         if is_directed:
             list_edge.append(DEdge('out', edge_label, edge_data))
         else:
             list_edge.append(ABCEdge(edge_label, edge_data))
     return node_label, list_neighbor, list_edge
 
-def read_graph_from_file(node_file:str, adj_list_file:str) -> Union[DBGraph, UDBGraph, FileNotFoundError, None]:
-    graph = None
-    is_directed = None
+def read_graph_from_file(data_path:str) -> Union[DBGraph, UDBGraph, FileNotFoundError, None]:
+    node_file = os.path.join(data_path, 'vertices_lst')
+    adj_list_file = os.path.join(data_path, 'adj_lst')
+    graph:Optional[ABCGraph] = None
     try:
         with open(node_file, 'r') as fin:
-            line = fin.readline()
+            line = fin.readline().strip()
             if line == 'D':
-                is_directed = True
                 graph = DBGraph()
-            else:
-                is_directed = False
+            elif line == 'U':
                 graph = UDBGraph()
+            else:
+                raise KeyError('Notation of graph not in \{D, U\}')
 
             while True:
                 line = fin.readline()
                 if line == '':
                     break
+                if line == '\n':
+                    continue
                 graph.add_node(parse_node(line))
     except FileNotFoundError:
         raise FileNotFoundError(f'Can\'t load graph from {node_file}')
@@ -345,7 +348,9 @@ def read_graph_from_file(node_file:str, adj_list_file:str) -> Union[DBGraph, UDB
                 line = fin.readline()
                 if line == '':
                     break
-                node_label, list_neighbor, list_edge = parse_adj_list(line, is_directed)
+                if line == '\n':
+                    continue
+                node_label, list_neighbor, list_edge = parse_adj_list(line, graph.is_directed)
                 for idx, neighbor in enumerate(list_neighbor):
                     graph.add_edge(node_label, neighbor, list_edge[idx])
 
