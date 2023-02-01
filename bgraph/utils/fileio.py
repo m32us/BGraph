@@ -388,7 +388,7 @@ def read_graph_from_file(data_path:str) -> Union[DBGraph, UDBGraph, FileNotFound
                     continue
                 graph.add_node(parse_node(line))
     except FileNotFoundError:
-        raise FileNotFoundError(f'Can\'t load graph from {node_file}')
+        raise FileNotFoundError(f'Can\'t load node of graph from {node_file}')
 
     try:
         with open(adj_list_file, 'r') as fin:
@@ -401,7 +401,6 @@ def read_graph_from_file(data_path:str) -> Union[DBGraph, UDBGraph, FileNotFound
                 node_label, list_neighbor, list_edge = parse_adj_list(line, graph.is_directed)
                 for idx, neighbor in enumerate(list_neighbor):
                     graph.add_edge(node_label, neighbor, list_edge[idx])
-
     except FileNotFoundError:
         raise FileNotFoundError(f'Can\'t load edge from {adj_list_file}')
 
