@@ -6,6 +6,19 @@ from typing import Optional
 
 
 def load_subgraph(list_label:list[int], data_path:str):
+    """Mô tả: Rút trích đồ thị con dựa trên một danh sách node cho trước
+
+    Args:
+        list_label (list[int]): danh sách nhãn của các node
+        data_path (str): đường dẫn đến file dữ liệu đồ thị (sẽ nói kỹ ở phần Cấu trúc tệp tin)
+
+    Raises:
+        FileNotFoundError: Raise nếu file dữ liệu đồ thị không tồn tại
+        KeyError: Raise nếu cấu trúc file bị sai định dạng
+
+    Returns:
+        [UDBGraph, DBGraph]: Trả về đối tượng đồ thị có hướng hoặc vô hướng
+    """
     sub_graph:Optional[ABCGraph] = None
     node_file = os.path.join(data_path, 'vertices_lst')
     adj_list_file = os.path.join(data_path, 'adj_lst')
@@ -54,3 +67,5 @@ def load_subgraph(list_label:list[int], data_path:str):
         raise FileNotFoundError(f'Can\'t load edge from {adj_list_file}')
 
     print(f'Loaded {list_label} from {data_path}')
+    return sub_graph
+
