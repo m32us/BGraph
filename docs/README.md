@@ -1,223 +1,275 @@
-# Đồ án
+# Đồ án: Xây dựng công cụ cho phép biểu diễn đồ thị lớn và rút trích đồ thị con
 
-## Thiết kế cấu trúc lưu trữ/ Hệ thống tập tin/ Nhập xuất
+## 1. Thông tin học viên
 
-1/ Hệ thống tập tin lưu trữ
+- Nguyễn Bảo Long (22C11065)
+- Lê Nhựt Nam (22C11067)
 
-Dữ liệu đồ thị được lưu trữ bằng hai tập tin chính:
-- vertices_lst: Danh sách đỉnh
-```
-# File: vertices_lst
-D # Dòng đầu tiên cho biết đồ thị có phải đồ thị có hướng, nếu có là D, không là U
-0:6 # Các dòng tiếp theo <nhãn đỉnh: dữ liệu đỉnh>
-```
-- adj_lst: Danh sách kế
-```
-# File: adj_lst
-0:0(0-3),2(1-3),4(2-3),5(3-3),7(4-3) # Các dòng có dạng: <nhãn đỉnh: Danh sách(nhãn đỉnh(nhãn cạnh-dữ liệu cạnh))
-```
+## 2. Các lớp trong thư viện
 
-2/ Hệ thống nhập xuất, lưu trữ đồ thị
+### 2.1. Các lớp trừu tượng
 
-Đọc dữ liệu từ file
+- Lớp đỉnh trừu tượng: `ABCNode`
 
-```py
-def read_graph_from_file(self, file_name: str):
-"""Đọc dữ liệu hệ thống tập tin. Do giả định đồ thị lớn, hàm thực thi đọc từng dòng mà không tải hết lên ram.
-Tham số:
-- file_name (str): Dường dẫn đến thư mục chứa dữ liệu.
-"""
-```
+  ```py
+  class ABCNode:
+      def __init__(self, label:Optional[int]=None, data Optional[object]=None) -> None:
+          self.data = data
+          self.label = label
+          self.list_neighbor:list[int] = [] # Các nhãn cho các láng giềng của node.
+          self.list_edge:list[ABCEdge] = [] # Các cạnh kề với node.
+  ```
 
-Lưu dữ liệu xuống file
+- Lớp cạnh trừu tượng: `ABCEdge`
 
-```py
-def save_graph(lst_nodes: dict, is_directed: bool, data_path: str = None):
-"""Lưu trữ đồ thị
-Tham số:
-- lst_nodes (dict): Danh sách nút
-- is_directed (bool): Đồ thị có hướng hay vô hướng
-- data_path (str, optional): Đường dẫn đến thư mục cần lưu. Defaults to None.
-"""
-```
+  ```py
+  class ABCEdge:
+      def __init__(self, label: Optional[int] = None, data: Optional[object]=None) -> None:
+          self.label = label # Nhãn cạnh.
+          self.data = data # Dữ liệu mà cạnh chứa.
+  ```
 
-## Thiết kế cấu trúc dữ liệu
+- Lớp đồ thị trừu tượng: `ABCGraph`
 
-**1/ Cấu trúc dữ liệu ABCNode**
+  ```py
+  class ABCGraph:
+      def __init__(self) -> None:
+          self.list_node: dict[int, ABCNode] = {} # Danh sách từ điển các node
+          self.num_node = 0 # Số lượng node
+          self.num_edge = 0 # Số lượng cạnh
+          self.is_directed:bool = False # Mặc định là đồ thị vô hướng
+  ```
 
-```py
-class ABCNode:
+### 2.1. Các lớp dẫn xuất
 
-    def __init__(self, label:Optional[int]=None, data Optional[object]=None) -> None:
-        self.data = data
-        self.label = label
-        self.list_neighbor:list[int] = [] # Các nhãn cho các láng giềng của node.
-        self.list_edge:list[ABCEdge] = [] # Các cạnh kề với node.
-```
+- Lớp đồ thị vô hướng: `UDBGraph`
 
-**2/ Cấu trúc dữ liệu ABCEdge**
+  ```py
+  class UDBGraph(ABCGraph):
+      def __init__(self, data_path: Optional[str] = None) -> None:
+          ABCGraph.__init__(self)
+  ```
 
-```py
-class ABCEdge:
-    def __init__(self, label: Optional[int] = None, data: Optional[object]=None) -> None:
-        self.label = label # Nhãn cạnh.
-        self.data = data # Dữ liệu mà cạnh chứa.
-```
+- Lớp cạnh của đồ thị có hướng: `DEdge`
 
-**3/ Cấu trúc dữ liệu đồ thị tổng quát**
+  ```py
+  class DEdge(ABCEdge):
+      def __init__(self, direction: str, label: Optional[int] = None, data: Optional[object] = None) -> None:
+          super().__init__(label, data)
+          if direction in {'in', 'out'}:
+              self.direction: str = direction
+          else:
+              raise KeyError('Node\'s construction fails.')
+  ```
 
-Cấu trúc dữ liệu
+- Lớp đỉnh của đồ thị có hướng: `DNode`
 
-```py
-class ABCGraph:
-    def __init__(self) -> None:
-        self.list_node: dict[int, ABCNode] = {} # Danh sách từ điển các node
-        self.num_node = 0 # Số lượng node
-        self.num_edge = 0 # Số lượng cạnh
-        self.is_directed:bool = False # Nếu False, đồ thị vô hướng. Ngược lại, đồ thị có hướng
-```
+  ```py
+  class DNode(ABCNode):
+      def __init__(self, label: Optional[int] = None, data: Optional[object] = None) -> None:
+          super().__init__(label, data)
+          self.list_edge: list[DEdge] = []
+  ```
 
-Các phương thức:
+- Lớp đồ thị có hướng: `DBGraph`
 
-**a) Thêm nút vào đồ thị**
+  ```py
+  class DBGraph(ABCGraph):
+      def __init__(self) -> None:
+          super().__init__()
+          self.list_node: dict[int, DNode] = {}
+          self.is_directed = True
+  ```
 
-```py
-@abstract.abstractmethod
-def add_node(self, node: ABCNode) -> Union[None, ValueError]:
-"""Mô tả: Thêm một nút vào đồ thị (vào danh sách node của đồ thị). Nếu node chưa có nhãn, phát sinh nhãn dựa trên số nút hiện có.
-Tham số: 
-- node (kiểu dữ liệu ABCNode).
-Trả về: trả về None nếu thêm thành công. Nếu không raise ValueError.
-"""
-```
+- Nhận xét: Việc thiết kế các lớp như trên giúp tối đa hóa việc kế thừa các phương thức cơ bản của đồ thị như **thêm node, xóa node, xóa cạnh** vào đồ thị. Từ đó, giúp giảm bớt quá trình viết code.
 
-**b) Thêm cạnh vào đồ thị**
+## 3. Các phương thức trên đồ thị
 
+### 3.1. Các phương thức chung
 
-```py
-def add_edge(self, node1: int, node2: int, edge: Optional[ABCEdge] = None) -> Union[None, KeyError]:
-"""Mô tả: Thêm một cạnh giữa 2 nút node1 và node2. Phương pháp này sẽ thực thi khác nhau trong đồ thị có hướng và vô hướng.
-Tham số: 
-- node1: nhãn của đỉnh thứ nhất; 
-- node2: nhãn của đỉnh thứ hai; 
-- edge: nhãn của cạnh nếu có
-Trả về: None nếu thành công hoặc raise KeyError nếu thất bại.
-"""
-```
+- Các phương thức này được cài đặt trong file `Graph.py`. Cả đồ thị có hướng và đồ thị vô hướng đề có thể sử dụng.
 
-**c) Xóa nút khỏi đồ thị**
+- Thêm node vào đồ thị: hàm `add_node`
 
-```py
-@abstract.abstractmethod
-def remove_node(self, node: int) -> Union[None, KeyError]:
-"""Mô tả: Xóa node khỏi đồ thị. Nếu đồ thị vô hướng, chỉ cần viếng thăm tất cả lân cận và xóa đi liên kết trước khi loại bỏ nó từ danh sách node của đồ thị. Đối với đồ thị có hướng :D???
-Tham số:  
-- node (int): nhãn của node.
-Trả về: None nếu thành công hoặc raise KeyError nếu thất bại.
-"""
-```
+  ```py
+  def add_node(self, node: ABCNode) -> Union[None, ValueError]:
+      """Mô tả: Thêm một nút vào đồ thị (vào danh sách node của đồ thị). Nếu node chưa có nhãn, phát sinh nhãn dựa trên số nút hiện có.
+      - Tham số:
+          - node (kiểu dữ liệu ABCNode).
+      - Trả về:
+          - Trả về None nếu thêm thành công
+          - Raise ValueError nếu node đã tồn tại trong đồ thị
+      """
+  ```
 
-**d) Xóa cạnh khỏi đồ thị**
+- Xóa nút khỏi đồ thị: `remove_node`
 
-```py
-@abstract.abstractmethod
-def remove_edge(self, start_node: int, end_node: int) -> Union[None, KeyError]:
-"""Mô tả: Loại bỏ một cạnh có đỉnh lần lượt là start_node và end_node. Đối với đồ thị vô hướng, ta loại bỏ đỉnh lân cận và cạnh liên kết cho từng đỉnh start_node và end_node. Đối với đồ thị có hướng, ta :D??
-Tham số:
-- start_node (int): nhãn của đỉnh bắt đầu cạnh.
-- end_node (int): nhãn của đỉnh kết thúc cạnh.
-Trả về: None nếu thành công hoặc raise KeyError nếu thất bại.
-"""
-```
+  ```py
+  def remove_node(self, node: int) -> Union[None, KeyError]:
+      """Mô tả: Xóa node khỏi đồ thị. Nếu đồ thị vô hướng, chỉ cần viếng thăm tất cả lân cận và xóa đi liên kết trước khi loại bỏ nó từ danh sách node của đồ thị. Đối với đồ thị có hướng :D???
+      Tham số:
+      - node (int): nhãn của node.
+      Trả về: None nếu thành công hoặc raise KeyError nếu thất bại.
+      """
+  ```
 
-**e) Tính bậc của nút cho trước**
+- Xóa cạnh khỏi đồ thị: `remove_edge`
+  ```py
+  def remove_edge(self, start_node: int, end_node: int, edge_label: Optional[int] = None) -> Union[None, KeyError]:
+      """Mô tả: Loại bỏ một cạnh có đỉnh lần lượt là start_node và end_node. Đối với đồ thị vô hướng, ta loại bỏ đỉnh lân cận và cạnh liên kết cho từng đỉnh start_node và end_node. Đối với đồ thị có hướng, ta :D??
+      - Tham số:
+          - start_node (int): nhãn của đỉnh bắt đầu cạnh.
+          - end_node (int): nhãn của đỉnh kết thúc cạnh.
+      - Trả về:
+          - Trả về None nếu thành công
+          - Raise KeyError nếu node không tồn tại trong đồ thị.
+      """
+  ```
 
-```py
-@abstract.abstractmethod
-def get_degree(self, node: int) -> Union[int, KeyError]:
-"""Mô tả: Tính toán bậc của một nút cho trước. Đối với đồ thị vô hướng, bậc của node = bậc ngoài = bậc trong. Đối với đồ thị có hướng, bậc của node = bậc ngoài + bậc trong.
-Tham số:
-- node (int): nhãn của node.
-Trả về: số bậc (int) nếu thành công hoặc raise KeyError nếu thất bại.
-"""
-```
+### 3.2. Các thao tác dẫn xuất
 
-**4/ Cấu trúc dữ liệu đồ thị vô hướng (Kế thừa từ cấu trúc dữ liệu đồ thị tổng quát)**
+- Thêm cạnh vào đồ thị: `add_edge`
 
-Dựa trên cơ sở của lớp đồ thị tổng quát và thực hiện cài đặt lại các phương thức sao cho phù hợp.
+  ```py
+  @abstract.abstractmethod
+  def add_edge(self, node1: int, node2: int, edge: Optional[ABCEdge] = None) -> Union[None, KeyError]:
+      """Mô tả: Thêm một cạnh giữa 2 nút node1 và node2. Phương pháp này sẽ thực thi khác nhau trong đồ thị có hướng và vô hướng.
+      - Tham số:
+          - node1: nhãn của đỉnh thứ nhất;
+          - node2: nhãn của đỉnh thứ hai;
+          - edge: nhãn của cạnh nếu có
+      - Trả về:
+          - Trả về None nếu thành công
+          - Raise KeyError nếu một trong số các node không tồn tại trong đồ thị
+      """
+  ```
 
-**5/ Cấu trúc dữ liệu đồ thị có hướng (Kế thừa từ cấu trúc dữ liệu đồ thị tổng quát)**
+- Tính bậc của một node: `get_degree`
 
-Cấu trúc dữ liệu cạnh có hướng:
+  ```py
+  @abstract.abstractmethod
+  def get_degree(self, node: int) -> Union[int, KeyError]:
+      """Mô tả: Tính toán bậc của một nút cho trước. Đối với đồ thị vô hướng, bậc của node = bậc ngoài = bậc trong. Đối với đồ thị có hướng, bậc của node = bậc ngoài + bậc trong.
+      - Tham số:
+          - node (int): nhãn của node.
+      - Trả về:
+          - Số bậc (int) nếu thành công
+          - Raise KeyError nếu node không tồn tại trong đồ thị.
+      """
+  ```
 
-```py
-class DEdge(ABCEdge):
-    def __init__(self, direction: str, label: Optional[int] = None, data: Optional[object] = None) -> None:
-        super().__init__(label, data)
-        if direction in {'in', 'out'}:
-            self.direction: str = direction
-        else:
-            raise KeyError('Node\'s construction fails.')
-```
+## 4. Các thao tác khác trên đồ thị
 
-Cấu trúc dữ liệu nút có hướng:
-```py
-class DNode(ABCNode):
-    def __init__(self, label: Optional[int] = None, data: Optional[object] = None) -> None:
-        super().__init__(label, data)
-        self.list_edge: list[DEdge] = []
-```
+- Phát sinh đồ thị ngẫu nhiên:
 
-Cấu trúc dữ liệu dồ thị có hướng:
+  ```py
+  def random_graph(n, p, *, directed=False, saved=True, folder_path='gdata') -> [list, int, int]:
+      """Mô tả: Hàm phát sinh đồ thị
+      - Tham số:
+          - n (int): Khởi tạo đồ thị với số đỉnh là n và không có cạnh nào.
+          - p (float/ double): một ngưỡng để quyết định có thêm cạnh hay không?
+          - directed (bool, optional): Quyết định liệu đồ thị có hướng hay vô hướng?
+      - Thuật toán: Với mỗi (không có thứ tự/ có thứ tự) cặp nút (u,v):
+          - Phát sinh một số thực ngẫu nhiên trong khoảng từ [0, 1]
+          - Nếu số này nhỏ hơn p, thêm cạnh (u-v) vào đồ thị.
+      - Trả về: Danh sách kề, số lượng nút, số lượng cạnh.
+      """
+  ```
 
-```py
-class DBGraph(ABCGraph):
-    def __init__(self) -> None:
-        super().__init__()
-        self.list_node: dict[int, DNode] = {}
-        self.is_directed = True
-```
+- Rút trích đồ thị con
 
+  - Phương pháp dựa trên các node cho trước: `load_subgraph`
 
-**6/ Phát sinh đồ thị ngẫu nhiên (có hướng/ vô hướng)**
+    ```py
+    def load_subgraph(list_label:list[int], data_path:str):
+        """Mô tả: Rút trích đồ thị con dựa trên một danh sách node cho trước
 
-```py
-def random_graph(n, p, *, directed=False, saved=True, folder_path='gdata') -> [list, int, int]:
-"""Mô tả: Hàm phát sinh đồ thị
-Tham số:
-- n (int): Khởi tạo đồ thị với số đỉnh là n và không có cạnh nào.
-- p (float/ double): một ngưỡng để quyết định có thêm cạnh hay không?
-- directed (bool, optional): Quyết định liệu đồ thị có hướng hay vô hướng?
-Thuật toán:
-    Với mỗi (không có thứ tự/ có thứ tự) cặp nút (u,v):
-        - Phát sinh một số thực ngẫu nhiên trong khoảng từ [0, 1]
-        - Nếu số này nhỏ hơn p, thêm cạnh (u-v) vào đồ thị.
-Trả về: Danh sách kề, số lượng nút, số lượng cạnh.
-"""
-```
+        - Tham số:
+            - list_label (list[int]): danh sách nhãn của các node
+            - data_path (str): đường dẫn đến file dữ liệu đồ thị (sẽ nói kỹ ở phần Cấu trúc tệp tin)
 
-**7/ Rút trích dồ thị con**
+        - Raises:
+            - FileNotFoundError: Raise nếu file dữ liệu đồ thị không tồn tại
+            - KeyError: Raise nếu cấu trúc file bị sai định dạng
 
-**a) Nodes induced subgraph**
+        - Trả về:
+            - [UDBGraph, DBGraph]: Trả về đối tượng đồ thị có hướng hoặc vô hướng
+        """
+    ```
 
-```py
-def node_induced_subgraph(self, induced_lst_nodes: list[int]) -> Union[bool, ResourceWarning]:
-""" Một đồ thị con dựa trên các nút khởi điểm (A node-induced subgraph) là một đồ thị có các cạnh mà các điểm cuối của chúng đều nằm trong tập hợp nút đã chỉ định.
-Tham số:
-- induced_lst_nodes (list[int]): Các nút để tạo thành đồ thị con. Liệt kê nhãn số nguyên.
-Trả về: một đồ thị con được tạo ra trên các nút đã cho. Hoặc raise ResourceWarning
-"""
-```
+  - Phương pháp dựa trên các cạnh cho trước: Quy về bài toán dựa trên các node cho trước.
 
-**b) Edges induced subgraph**
+## 5. Cấu trúc dữ liệu đồ thị
 
-```py
-def edges_induced_subgraph(self, induced_lst_edges: list[int]) -> Union[bool, ResourceWarning]:
-""" Một đồ thị con dựa trên các cạnh khởi điểm (A edge-induced subgraph) tương đương với việc tạo một đồ thị mới sử dụng các cạnh đã cho.
-Tham số:
-- induced_lst_edges (list[int]): Các cạnh để tạo thành đồ thị con. Liệt kê nhãn số nguyên.
-Trả về: một đồ thị con được tạo ra trên các cạnh đã cho. Hoặc raise ResourceWarning
-"""
-```
+### 5.1. Hệ thống tệp tin lưu trữ
 
-**8/ MỞ RỘNG: Tìm hiểu cấu trúc biểu diễn đồ thị lớn (CHƠI ĐÙA với Binary Decision Diagram)**
+- Dữ liệu đồ thị được lưu trữ bằng hai tập tin chính:
+  - `vertices_lst`: Tệp tin lưu trữ danh sách đỉnh và dữ liệu của từng đỉnh.
+  ```
+  D # Dòng đầu tiên cho biết đồ thị có phải đồ thị có hướng, nếu có là D, không là U
+  0:data of node 1 # Các dòng tiếp theo <nhãn đỉnh: dữ liệu đỉnh>, dòng thứ i chứa thông tin của nút có nhãn i-2
+  1:data of node 2
+  ```
+  - `adj_lst`: Tệp tin lưu trữ danh sách kề, bao gồm thông tin thể hiện kết nối giữa 2 đỉnh và cách mà chúng kết nối với nhau (dữ liệu cạnh).
+  ```
+  0:0(0-data of edge 0),2(1-data of edge 1) # Các dòng có dạng: <nhãn đỉnh: Danh sách(nhãn đỉnh(nhãn cạnh-dữ liệu cạnh)), dòng thứ i lưu trữ danh sách kề của nút có nhãn i - 1
+  1:0(2-data of edge 2),5(3-data of edge 3)
+  ```
+
+### 5.2. Thao tác với đồ thị trên tệp tin
+
+- Đọc dữ liệu từ file: Sử dụng hàm `read_graph_from_file`
+
+  ```py
+  def read_graph_from_file(data_path:str) -> Union[DBGraph, UDBGraph, FileNotFoundError, None]:
+      """Đọc dữ liệu hệ thống tập tin. Do giả định đồ thị lớn, hàm thực thi đọc từng dòng mà không tải hết lên ram.
+      - Tham số:
+          - file_name (str): Dường dẫn đến thư mục chứa dữ liệu.
+      - Trả về:
+          - Trường hợp dữ liệu đồ thị vô hướng: Trả về cấu trúc dữ liệu UDBGraph
+          - Trường hợp dữ liệu đồ thị có hướng: Trả về cấu trúc dữ liệu DBGraph
+          - Raise FileNotFoundError nếu không tìm thấy tệp tin.
+      """
+  ```
+
+- Lưu dữ liệu xuống file: Sử dụng hàm `save_graph`
+
+  ```py
+  def save_graph(lst_nodes: dict, is_directed: bool, data_path: str = None) -> Union[None, FileNotFoundError]:
+      """Lưu trữ đồ thị
+      - Tham số:
+          - lst_nodes (dict): Danh sách nút
+          - is_directed (bool): Đồ thị có hướng hay vô hướng
+          - data_path (str, optional): Đường dẫn đến thư mục cần lưu. Defaults to None.
+      - Trả về:
+          - Trả về None nếu thành công.
+          - Raise FileNotFoundError nếu không tìm thấy tệp tin.
+      """
+  ```
+
+## 6. MỞ RỘNG: Tìm hiểu cấu trúc biểu diễn đồ thị lớn (CHƠI ĐÙA với Binary Decision Diagram)
+
+Đồ thị lớn có thể chiếm nhiều bộ nhớ. Chúng ta có thể sử dụng Sơ đồ quyết định nhị phân (Binary Decision Diagram) để giảm độ phức tạp của không gian. Trước tiên, chúng tôi sẽ chuyển đổi biểu đồ thành công thức boolean, sau đó chuyển đổi công thức đó thành Sơ đồ quyết định nhị phân (bản thân nó là một đồ thị).
+
+Để chuyển đổi biểu đồ này thành công thức boolean, trước tiên chúng ta cần biểu diễn từng biến dưới dạng tổ hợp các biến nhị phân. Nếu như đồ thị có n nút, chúng ta sẽ cần có log_2(n) biến nhị phân.
+
+Ví dụ:
+
+| Nút nguồn | x_1 | x_2 | x_3 |
+| --------- | --- | --- | --- |
+| n1        | 0   | 0   | 0   |
+| n2        | 0   | 0   | 1   |
+| n3        | 0   | 1   | 0   |
+| n5        | 0   | 1   | 1   |
+| n5        | 1   | 0   | 0   |
+| n6        | 1   | 0   | 1   |
+| n7        | 1   | 1   | 0   |
+| n8        | 1   | 1   | 1   |
+
+![](./graph.PNG)
+
+Biểu thức luận lý cho nút n1 là (not) x_1 and (not) x_2 and (not) x_3, biểu thức luận lý cho nút n3 là (not) x_1 and x_2 and (not) x_3, thì cạnh n1-n3 có dạng E_13 = [(not) x_1 and (not) x_2 and (not) x_3] and [(not) x_1 and x_2 and (not) x_3]. Từ biểu thức cách cạnh, ta lập được biểu thứ E = E_01 or E_13 or ... cho đồ thị.
+
+Sử dụng biểu thức này cho việc xử lý thành một dạng tinh gọn hơn nhờ BDD. Bằng cách duyệt BDD cho ta biết được những cạnh gì có trong đồ thị. Một đường đi dừng ở 1 có nghĩa là cạnh đó nằm trong đồ thị gốc, ngược là giá trị cho ra là 0.
+
+![](./bdd_example_R.PNG)

@@ -235,6 +235,18 @@ def __check_node_exist(node_label: int, data_path: str) -> bool:
 
 
 def __check_edge_exist(start_node_label: Optional[int], end_node_label: Optional[int], edge_label: Optional[int], data_path: str, is_graph_directed: Optional[bool] = False) -> bool:
+    """Checking functionality that help determine whether edge exists in graph.
+
+    Args:
+        start_node_label (Optional[int]): Start node of input edge.
+        end_node_label (Optional[int]): End node of input edge.
+        edge_label (Optional[int]): Label of input edge [Optional].
+        data_path (str): Path to dataset.
+        is_graph_directed (Optional[bool], optional): _description_. Defaults to False.
+
+    Returns:
+        bool: _description_
+    """
     if not __check_node_exist(start_node_label, data_path) or not __check_node_exist(end_node_label):
         return False
     adjn_start_node, lst_adje_start_node, _ = get_adjacency_list(
@@ -280,30 +292,53 @@ def add_edge_to_file(start_node_label: int, end_node_label: int, data: Optional[
 
 
 def read_adjacency_list(filepath='adjacency_list.csv'):
+    # TODO: Implement later.
     pass
 
 
 def read_adjacency_matrix(filepath='adjacency_matrix.csv'):
+    # TODO: Implement later.
     pass
 
 
 def read_edge_list(filepath='edge_list.csv'):
+    # TODO: Implement later.
     pass
 
-def parse_node(line:str):
+def parse_node(line:str) -> ABCNode:
+    """Parsing node
+
+    Args:
+        line (str): Input string
+
+    Returns:
+        ABCNode: node has type as ABCNode data structure
+    """
     line = line.strip()
     elements = line.split(':')
     node_label = int(elements[0])
     node_data = elements[1]
     return ABCNode(node_label, node_data)
 
-def parse_adj_list(line:str, is_directed:bool):
+def parse_adj_list(line:str, is_directed:bool) -> List[int, list, list]:
+    """Parsing adjacency list file.
+
+    Args:
+        line (str): Input string line.
+        is_directed (bool): Boolean value that determine whether edge is directed or not.
+
+    Returns:
+        List[int, list, list]: Return node label, list of its neighbors, and list of its adjacency nodes.
+    """
     line = line.strip()
     elements = line.split(':')
     node_label = int(elements[0])
+
     edges = elements[1].split(',')
+
     list_edge:list[ABCEdge] = []
     list_neighbor:list[int] = []
+
     for edge in edges:
         tmp = edge.split('(')
         if tmp[0] == '':
@@ -319,6 +354,19 @@ def parse_adj_list(line:str, is_directed:bool):
     return node_label, list_neighbor, list_edge
 
 def read_graph_from_file(data_path:str) -> Union[DBGraph, UDBGraph, FileNotFoundError, None]:
+    """Reading functionality that help read graph from file.
+
+    Args:
+        data_path (str): Input string that represent the path to dataset.
+
+    Raises:
+        KeyError:
+        FileNotFoundError: f'Can\'t load graph from {node list file}'.
+        FileNotFoundError: f'Can\'t load edge from {adjacency list file}'.
+
+    Returns:
+        Union[DBGraph, UDBGraph, FileNotFoundError, None]: If process is done without any errors, return None. Otherwise, raise FileNotFoundError depend on two cases of error that has mentioned above.
+    """
     node_file = os.path.join(data_path, 'vertices_lst')
     adj_list_file = os.path.join(data_path, 'adj_lst')
     graph:Optional[ABCGraph] = None
