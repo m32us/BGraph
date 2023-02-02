@@ -1,12 +1,78 @@
 from typing import Optional, Union
-from bgraph.utils import read_graph_from_file
+from bgraph.core import ABCGraph, ABCEdge, ABCNode, DEdge, DNode, DBGraph, UDBGraph
+import os
 
-graph = read_graph_from_file('./node.txt', './adj_list.txt')
-list_node = graph.list_node
-node1 = list_node[1]
-list_edge1 = node1.list_edge
-for item in list_edge1:
-    print(item.data)
+def parse_node(line:str):
+    line = line.strip()
+    elements = line.split(':')
+    node_label = int(elements[0])
+    node_data = elements[1]
+    return ABCNode(node_label, node_data)
+
+def parse_adj_list(line:str, is_directed:bool):
+    line = line.strip()
+    elements = line.split(':')
+    node_label = int(elements[0])
+    edges = elements[1].split(',')
+    list_edge:list[ABCEdge] = []
+    list_neighbor:list[int] = []
+    for edge in edges:
+        tmp = edge.split('(')
+        if tmp[0] == '':
+            break
+        list_neighbor.append(int(tmp[0]))
+
+        edge_label = int(tmp[1].split('-')[0])
+        edge_data = tmp[1].split('-')[1][:-1]
+        if is_directed:
+            list_edge.append(DEdge('out', edge_label, edge_data))
+        else:
+            list_edge.append(ABCEdge(edge_label, edge_data))
+    return node_label, list_neighbor, list_edge
+
+def read_graph_from_file(data_path:str) -> Union[DBGraph, UDBGraph, FileNotFoundError, None]:
+    node_file = os.path.join(data_path, 'vertices_lst')
+    adj_list_file = os.path.join(data_path, 'adj_lst')
+    graph:Optional[ABCGraph] = None
+    try:
+        with open(node_file, 'r') as fin:
+            line = fin.readline().strip()
+            if line == 'D':
+                graph = DBGraph()
+            elif line == 'U':
+                graph = UDBGraph()
+            else:
+                raise KeyError('Notation of graph not in \{D, U\}')
+
+            while True:
+                line = fin.readline()
+                if line == '':
+                    break
+                if line == '\n':
+                    continue
+                graph.add_node(parse_node(line))
+    except FileNotFoundError:
+        raise FileNotFoundError(f'Can\'t load graph from {node_file}')
+
+    try:
+        with open(adj_list_file, 'r') as fin:
+            while True:
+                line = fin.readline()
+                if line == '':
+                    break
+                if line == '\n':
+                    continue
+                node_label, list_neighbor, list_edge = parse_adj_list(line, graph.is_directed)
+                for idx, neighbor in enumerate(list_neighbor):
+                    graph.add_edge(node_label, neighbor, list_edge[idx])
+
+    except FileNotFoundError:
+        raise FileNotFoundError(f'Can\'t load edge from {adj_list_file}')
+
+    return graph
+
+graph = read_graph_from_file('./z')
+graph.print_adj_list()
 
 """
 # hàm đọc đồ thị từ file (đọc nguyên cái file)
